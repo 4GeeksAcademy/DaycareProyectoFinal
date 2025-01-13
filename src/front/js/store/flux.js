@@ -20,6 +20,14 @@ const getState = ({ getStore, getActions, setStore }) => {
 				uploadedFileUrl: null,
 				error: null,
 				classes: [],
+
+
+		message: null,
+      	user: null,
+      	error: null,
+      	contactMessage: null,
+      	contactError: null,
+      	submitting: false,
 		},
 		actions: {
 			signUp: async (username, email, password) => {
@@ -129,7 +137,44 @@ const getState = ({ getStore, getActions, setStore }) => {
 			// Use getActions to call a function within a fuction
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
-			}
+			},
+
+			// Acción para enviar el formulario de contacto
+			submitContactForm: async (formData) => {
+				const store = getStore();
+				setStore({ submitting: true, contactError: null, contactMessage: null });
+		
+				try {
+				  const response = await fetch(`${process.env.BACKEND_URL}/api/contacts`, {
+					method: 'POST',
+					headers: {
+					  'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(formData),
+				  });
+		
+				  if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(errorData.error || "Failed to submit contact form");
+				  }
+		
+				  const data = await response.json();
+				  setStore({
+					contactMessage: data.message,
+					submitting: false,
+					contactError: null,
+				  });
+		
+				  return { success: true, message: data.message };
+				} catch (error) {
+				  setStore({
+					contactError: error.message, 
+					submitting: false,
+					contactMessage: null,
+				  });
+				  return { success: false, error: error.message };
+				}
+			  },
 		}
 	};
 };

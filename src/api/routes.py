@@ -355,6 +355,7 @@ def create_contact():
     new_contact = Contact(
         name=data['name'],
         email=data['email'],
+        phone_number=data.get('phone_number', ''),
         message=data['message']
     )
     db.session.add(new_contact)
