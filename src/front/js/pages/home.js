@@ -9,7 +9,6 @@ export const Home = () => {
 		<div className="text-center mt-5">
 			<Classes />
 			<FileUploader />
-			<Contactus />
 		</div>
 	);
 };
