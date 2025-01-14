@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { Context } from "../store/appContext";
 import "../../styles/Contactus.css";
 
-const Contactus = () => {
-  // Estado para almacenar los datos del formulario
+const ContactUs = () => {
+  const { actions,store } = useContext(Context);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -10,57 +11,38 @@ const Contactus = () => {
     phone_number: "",
     message: "",
   });
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-
-  // Maneja el cambio de los inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setFormData({ ...formData, [name]: value });
   };
 
-  // Función que maneja el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccessMessage("");
 
-    // Verifica si los campos obligatorios están completos
+    // Validaciones básicas
     if (!formData.name || !formData.email || !formData.message) {
-      setError("Please fill in all required fields.");
+      setError("Please fill out all required fields.");
       return;
     }
 
-    try {
-      const response = await fetch("https://ominous-system-g459qwwpqqj9hvjp-3001.app.github.dev/contacts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+    const { success, error } = await actions.contactUs(
+      formData.name,
+      formData.email,
+      formData.subject,
+      formData.phone_number,
+      formData.message
+    );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.error || "Failed to submit contact.");
-        setSuccess(false);
-      } else {
-        const data = await response.json();
-        setSuccess(true);
-        setError(null);
-        setFormData({
-          name: "",
-          email: "",
-          subject: "",
-          phone_number: "",
-          message: "",
-        });
-      }
-    } catch (error) {
-      setError("An error occurred while submitting the form.");
-      setSuccess(false);
+    if (success) {
+      setSuccessMessage("Your message has been sent successfully!");
+      setFormData({ name: "", email: "", subject: "", phone_number: "", message: "" });
+    } else {
+      setError(error);
     }
   };
 
@@ -74,7 +56,7 @@ const Contactus = () => {
         </div>
 
         <h5 className="text-uppercase text-warning">Get in Touch</h5>
-        <h2 className="contact-title">Needs Help? Let’s Get in Touch</h2>
+        <h2 className="contact-title">Need Help? Let’s Get in Touch</h2>
 
         {/* Formulario */}
         <form className="mt-4" onSubmit={handleSubmit}>
@@ -133,7 +115,7 @@ const Contactus = () => {
 
           {/* Mostrar mensaje de éxito o error */}
           {error && <div className="alert alert-danger">{error}</div>}
-          {success && <div className="alert alert-success">Your message has been sent successfully!</div>}
+          {successMessage && <div className="alert alert-success">{successMessage}</div>}
 
           {/* Botón de envío */}
           <div className="mt-4">
@@ -147,4 +129,4 @@ const Contactus = () => {
   );
 };
 
-export default Contactus;
+export default ContactUs;
