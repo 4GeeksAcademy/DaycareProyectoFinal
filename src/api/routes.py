@@ -363,6 +363,19 @@ def create_contact():
     return jsonify(new_contact.serialize()), 201
 
 
+@api.route('/contactus', methods=['GET'])
+def get_contactus():
+    contactus = Contactus.query.all()
+    contactus = list(map(lambda x: x.serialize(), contactus))
+    return jsonify(contactus), 200
+
+@api.route('/contactus/<int:id>', methods=['GET'])
+def get_contactu(id):
+    contactus = Contactus.query.get(id)
+    if not contactus:
+        return jsonify({"error": "Contact not found"}), 404
+    return jsonify(contactus.serialize()), 200
+
 @api.route('/contactus', methods=['POST'])
 def create_contactus():
     data = request.json
