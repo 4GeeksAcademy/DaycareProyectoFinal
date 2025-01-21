@@ -9,11 +9,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 			classes: [],
 			programs: [],
 			clients: [],
+			schedules: [],
 			scheduleManagement: [],
-			// Admin Dashboard
-			// /admin-dashboard
-			// /admin-dashboard/clients
-			// /admin-dashboard/schedule-management
 			// /admin-dashboard/classes
 			// /admin-dashboard/enrollments
 			// /admin-dashboard/reports
@@ -219,10 +216,233 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 
 			// Admin Dashboard  
-// 			/admin-dashboard
+		// /admin-dashboard/clients
+		fetchClients: async () => {
+			try {
+			const response = await fetch(process.env.BACKEND_URL + "/api/clients")
+			if (response.ok) {
+				const data = await response.json()
+				setStore({ clients: data })
 
-// /admin-dashboard/clients
+				// Si la base de datos está vacía, cargar datos iniciales
+				if (data.length === 0) {
+				getActions().loadInitialClientsData()
+				}
+			} else {
+				console.error("Error fetching clients:", response.status)
+			}
+			} catch (error) {
+			console.error("Error fetching clients:", error)
+			}
+		},
+
+		loadInitialClientsData: async () => {
+			const initialClients = [
+			{ name: "Juan Pérez", email: "juan@example.com", phone: "123-456-7890", status: "Activo" },
+			{ name: "María García", email: "maria@example.com", phone: "098-765-4321", status: "Inactivo" },
+			{ name: "Carlos Rodríguez", email: "carlos@example.com", phone: "555-555-5555", status: "Activo" },
+			]
+
+			try {
+			for (const client of initialClients) {
+				await getActions().addClient(client)
+			}
+			} catch (error) {
+			console.error("Error loading initial clients data:", error)
+			}
+		},
+
+		addClient: async (clientData) => {
+			try {
+			const response = await fetch(process.env.BACKEND_URL + "/api/clients", {
+				method: "POST",
+				headers: {
+				"Content-Type": "application/json",
+				},
+				body: JSON.stringify(clientData),
+			})
+
+			if (response.ok) {
+				const newClient = await response.json()
+				const store = getStore()
+				setStore({ clients: [...store.clients, newClient] })
+				return newClient
+			} else {
+				console.error("Error adding client:", response.status)
+			}
+			} catch (error) {
+			console.error("Error adding client:", error)
+			}
+		},
+
+		updateClient: async (id, clientData) => {
+			try {
+			const response = await fetch(`${process.env.BACKEND_URL}/api/clients/${id}`, {
+				method: "PUT",
+				headers: {
+				"Content-Type": "application/json",
+				},
+				body: JSON.stringify(clientData),
+			})
+
+			if (response.ok) {
+				const updatedClient = await response.json()
+				const store = getStore()
+				const updatedClients = store.clients.map((client) => (client.id === id ? updatedClient : client))
+				setStore({ clients: updatedClients })
+				return updatedClient
+			} else {
+				console.error("Error updating client:", response.status)
+			}
+			} catch (error) {
+			console.error("Error updating client:", error)
+			}
+		},
+
+		deleteClient: async (id) => {
+			try {
+			const response = await fetch(`${process.env.BACKEND_URL}/api/clients/${id}`, {
+				method: "DELETE",
+			})
+
+			if (response.ok) {
+				const store = getStore()
+				const updatedClients = store.clients.filter((client) => client.id !== id)
+				setStore({ clients: updatedClients })
+			} else {
+				console.error("Error deleting client:", response.status)
+			}
+			} catch (error) {
+			console.error("Error deleting client:", error)
+			}
+		},
+
 // /admin-dashboard/schedule-management
+fetchSchedules: async () => {
+	try {
+	  const response = await fetch(process.env.BACKEND_URL + "/api/schedules")
+	  if (response.ok) {
+		const data = await response.json()
+		setStore({ schedules: data })
+
+		// Si la base de datos está vacía, cargar datos iniciales
+		if (data.length === 0) {
+		  getActions().loadInitialSchedulesData()
+		}
+	  } else {
+		console.error("Error fetching schedules:", response.status)
+	  }
+	} catch (error) {
+	  console.error("Error fetching schedules:", error)
+	}
+  },
+
+  loadInitialSchedulesData: async () => {
+	const initialSchedules = [
+	  {
+		class: "Arte y Creatividad",
+		teacher: "María García",
+		dayOfWeek: "Lunes",
+		startTime: "09:00",
+		endTime: "10:30",
+		capacity: 15,
+		enrolled: 12,
+	  },
+	  {
+		class: "Música y Movimiento",
+		teacher: "Juan Pérez",
+		dayOfWeek: "Martes",
+		startTime: "11:00",
+		endTime: "12:30",
+		capacity: 20,
+		enrolled: 18,
+	  },
+	  {
+		class: "Juegos Educativos",
+		teacher: "Ana Rodríguez",
+		dayOfWeek: "Miércoles",
+		startTime: "14:00",
+		endTime: "15:30",
+		capacity: 12,
+		enrolled: 10,
+	  },
+	]
+
+	try {
+	  for (const schedule of initialSchedules) {
+		await getActions().addSchedule(schedule)
+	  }
+	} catch (error) {
+	  console.error("Error loading initial schedules data:", error)
+	}
+  },
+
+  addSchedule: async (scheduleData) => {
+	try {
+	  const response = await fetch(process.env.BACKEND_URL + "/api/schedules", {
+		method: "POST",
+		headers: {
+		  "Content-Type": "application/json",
+		},
+		body: JSON.stringify(scheduleData),
+	  })
+
+	  if (response.ok) {
+		const newSchedule = await response.json()
+		const store = getStore()
+		setStore({ schedules: [...store.schedules, newSchedule] })
+		return newSchedule
+	  } else {
+		console.error("Error adding schedule:", response.status)
+	  }
+	} catch (error) {
+	  console.error("Error adding schedule:", error)
+	}
+  },
+
+  updateSchedule: async (id, scheduleData) => {
+	try {
+	  const response = await fetch(`${process.env.BACKEND_URL}/api/schedules/${id}`, {
+		method: "PUT",
+		headers: {
+		  "Content-Type": "application/json",
+		},
+		body: JSON.stringify(scheduleData),
+	  })
+
+	  if (response.ok) {
+		const updatedSchedule = await response.json()
+		const store = getStore()
+		const updatedSchedules = store.schedules.map((schedule) =>
+		  schedule.id === id ? updatedSchedule : schedule,
+		)
+		setStore({ schedules: updatedSchedules })
+		return updatedSchedule
+	  } else {
+		console.error("Error updating schedule:", response.status)
+	  }
+	} catch (error) {
+	  console.error("Error updating schedule:", error)
+	}
+  },
+
+  deleteSchedule: async (id) => {
+	try {
+	  const response = await fetch(`${process.env.BACKEND_URL}/api/schedules/${id}`, {
+		method: "DELETE",
+	  })
+
+	  if (response.ok) {
+		const store = getStore()
+		const updatedSchedules = store.schedules.filter((schedule) => schedule.id !== id)
+		setStore({ schedules: updatedSchedules })
+	  } else {
+		console.error("Error deleting schedule:", response.status)
+	  }
+	} catch (error) {
+	  console.error("Error deleting schedule:", error)
+	}
+  },
 // /admin-dashboard/classes
 // /admin-dashboard/enrollments
 // /admin-dashboard/reports
@@ -240,42 +460,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 // /admin-dashboard/maintenance
 // /admin-dashboard/staff-signup
 // /admin-dashboard/settings
-clients: async () => {
-	try {
-		const response = await fetch(process.env.BACKEND_URL + "/api/clients");
-		if (response.ok) {
-			const data = await response.json();
-			setStore({ clients: data });
-		} else {
-			console.error("Error fetching clients:", response.status);
-		}
-	} catch (error) {
-		console.error("Error fetching clients:", error);
-	}
-	 
-},
-scheduleManagement: async () => {
-	try {
-		const response = await fetch(process.env.BACKEND_URL + "/api/schedule-management");
-		if (response.ok) {
-			const data = await response.json();
-			setStore({ scheduleManagement: data });
-		} else {
-			console.error("Error fetching schedule-management:", response.status);
 
-		}
-	} catch (error) {
-		console.error("Error fetching schedule-management:", error);
-	}
-}
-
-
-
-
-
-
-			
-			
+		
 		}
 	};
 };

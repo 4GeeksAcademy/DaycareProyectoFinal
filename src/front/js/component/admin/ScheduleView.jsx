@@ -8,6 +8,7 @@ const localizer = momentLocalizer(moment)
 
 const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
 
+
 const SchedulePage = () => {
   const [events, setEvents] = useState([
     {

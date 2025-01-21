@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-
+from datetime import datetime
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -140,8 +140,7 @@ class Program(db.Model):
             "age": self.age,
             "time": self.time,
         }
-    
-    
+        
 class Subscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('parent.id'), nullable=False)
@@ -239,8 +238,6 @@ class Task(db.Model):
             "status": self.status,
         }
 
-
-
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     child_id = db.Column(db.Integer, db.ForeignKey('child.id'), nullable=False)
@@ -298,23 +295,32 @@ class Payment(db.Model):
 
 class Schedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
-    day = db.Column(db.String(50), nullable=False)
-    start_time = db.Column(db.String(50), nullable=False)
-    end_time = db.Column(db.String(50), nullable=False)
+    class_name = db.Column(db.String(120), nullable=False)
+    teacher = db.Column(db.String(120), nullable=False)
+    dayOfWeek = db.Column(db.String(20), nullable=False)
+    startTime = db.Column(db.String(5), nullable=False)
+    endTime = db.Column(db.String(5), nullable=False)
+    capacity = db.Column(db.Integer, nullable=False)
+    enrolled = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
-        return f'<Schedule {self.id}>'
+        return f'<Schedule {self.class_name}>'
 
     def serialize(self):
         return {
             "id": self.id,
-            "class_id": self.class_id,
-            "day": self.day,
-            "start_time": self.start_time,
-            "end_time": self.end_time,
+            "class": self.class_name,
+            "teacher": self.teacher,
+            "dayOfWeek": self.dayOfWeek,
+            "startTime": self.startTime,
+            "endTime": self.endTime,
+            "capacity": self.capacity,
+            "enrolled": self.enrolled,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
         }
-
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
@@ -409,4 +415,25 @@ class Getintouch(db.Model):
             "message": self.message,
         }
     
-    
+class Client(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='Activo')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Client {self.name}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
+            "status": self.status,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
+        }

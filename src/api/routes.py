@@ -1,6 +1,6 @@
 import cloudinary
 from flask import Flask, request, jsonify, Blueprint
-from api.models import db, Newsletter,User, Parent, Teacher, Child, Class, Enrollment, Program, Contact, Subscription, ProgressReport, Event, Message, Task, Attendance, Grade, Payment, Schedule, Course, Notification,Getintouch
+from api.models import db, Newsletter,User, Parent, Teacher, Child, Class, Enrollment, Program, Contact, Subscription, ProgressReport, Event, Message, Task, Attendance, Grade, Payment, Schedule, Course, Notification,Getintouch, Client
 from api.utils import APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
@@ -424,3 +424,116 @@ def create_contactus():
     db.session.add(new_contactus)
     db.session.commit()
     return jsonify(new_contactus.serialize()), 201
+
+
+
+# admin dashboard
+
+@api.route('/clients', methods=['GET'])
+def get_clients():
+    clients = Client.query.all()
+    return jsonify([client.serialize() for client in clients]), 200
+
+@api.route('/clients', methods=['POST'])
+def create_client():
+    data = request.json
+    new_client = Client(
+        name=data['name'],
+        email=data['email'],
+        phone=data['phone'],
+        status=data.get('status', 'Activo')
+    )
+    db.session.add(new_client)
+    db.session.commit()
+    return jsonify(new_client.serialize()), 201
+
+@api.route('/clients/<int:id>', methods=['GET'])
+def get_client(id):
+    client = Client.query.get(id)
+    if client is None:
+        return jsonify({"error": "Client not found"}), 404
+    return jsonify(client.serialize()), 200
+
+@api.route('/clients/<int:id>', methods=['PUT'])
+def update_client(id):
+    client = Client.query.get(id)
+    if client is None:
+        return jsonify({"error": "Client not found"}), 404
+    
+    data = request.json
+    client.name = data.get('name', client.name)
+    client.email = data.get('email', client.email)
+    client.phone = data.get('phone', client.phone)
+    client.status = data.get('status', client.status)
+    
+    db.session.commit()
+    return jsonify(client.serialize()), 200
+
+@api.route('/clients/<int:id>', methods=['DELETE'])
+def delete_client(id):
+
+    client = Client.query.get(id)
+    if client is None:
+        return jsonify({"error": "Client not found"}), 404
+    
+    db.session.delete(client)
+    db.session.commit()
+    return jsonify({"message": "Client deleted successfully"}), 200
+
+
+@api.route('/schedules', methods=['GET'])
+def get_schedules():
+    schedules = Schedule.query.all()
+    return jsonify([schedule.serialize() for schedule in schedules]), 200
+
+@api.route('/schedules', methods=['POST'])
+def create_schedule():
+    data = request.json
+    new_schedule = Schedule(
+        class_name=data['class'],
+        teacher=data['teacher'],
+        dayOfWeek=data['dayOfWeek'],
+        startTime=data['startTime'],
+        endTime=data['endTime'],
+        capacity=data['capacity'],
+        enrolled=data['enrolled']
+    )
+    db.session.add(new_schedule)
+    db.session.commit()
+    return jsonify(new_schedule.serialize()), 201
+
+@api.route('/schedules/<int:id>', methods=['GET'])
+def get_schedule(id):
+    schedule = Schedule.query.get(id)
+    if schedule is None:
+        return jsonify({"error": "Schedule not found"}), 404
+    return jsonify(schedule.serialize()), 200
+
+@api.route('/schedules/<int:id>', methods=['PUT'])
+def update_schedule(id):
+    schedule = Schedule.query.get(id)
+    if schedule is None:
+        return jsonify({"error": "Schedule not found"}), 404
+    
+    data = request.json
+    schedule.class_name = data.get('class', schedule.class_name)
+    schedule.teacher = data.get('teacher', schedule.teacher)
+    schedule.dayOfWeek = data.get('dayOfWeek', schedule.dayOfWeek)
+    schedule.startTime = data.get('startTime', schedule.startTime)
+    schedule.endTime = data.get('endTime', schedule.endTime)
+    schedule.capacity = data.get('capacity', schedule.capacity)
+    schedule.enrolled = data.get('enrolled', schedule.enrolled)
+    
+    db.session.commit()
+    return jsonify(schedule.serialize()), 200
+
+@api.route('/schedules/<int:id>', methods=['DELETE'])
+def delete_schedule(id):
+    schedule = Schedule.query.get(id)
+    if schedule is None:
+        return jsonify({"error": "Schedule not found"}), 404
+    
+    db.session.delete(schedule)
+    db.session.commit()
+    return jsonify({"message": "Schedule deleted successfully"}), 200
+
