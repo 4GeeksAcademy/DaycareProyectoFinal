@@ -2,25 +2,38 @@ const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
 			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
-			,
 			user: null,
 			message: null,
 			uploadedFileUrl: null,
 			error: null,
 			classes: [],
 			programs: [],
+			clients: [],
+			scheduleManagement: [],
+			// Admin Dashboard
+			// /admin-dashboard
+			// /admin-dashboard/clients
+			// /admin-dashboard/schedule-management
+			// /admin-dashboard/classes
+			// /admin-dashboard/enrollments
+			// /admin-dashboard/reports
+			// /admin-dashboard/blog
+
+			// /admin-dashboard/inventory
+			// /admin-dashboard/emails
+			// /admin-dashboard/notifications
+			// /admin-dashboard/archive
+			// /admin-dashboard/schedule
+			// /admin-dashboard/tasks
+			// /admin-dashboard/activities
+			// /admin-dashboard/videos
+			// /admin-dashboard/inactive-accounts
+			// /admin-dashboard/approvals
+			// /admin-dashboard/maintenance
+			// /admin-dashboard/staff-signup
+			// /admin-dashboard/settings
+
+			
 		},
 		actions: {
 			signUp: async (username, email, password) => {
@@ -154,17 +167,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.log("Error loading message from backend", error)
 				}
 			},
-			
-
-
-			// Use getActions to call a function within a fuction
-			exampleFunction: () => {
-				getActions().changeColor(0, "green");
-			},
-
-
-
-			
 			getinTouch: async (name, email, subject, phone_number, message) => {
 				try {
 					const response = await fetch(process.env.BACKEND_URL + "/api/getintouch", {
@@ -209,6 +211,70 @@ const getState = ({ getStore, getActions, setStore }) => {
 					return { success: false, error: error.message };
 				}
 			},
+
+			logout: () => {
+				localStorage.removeItem("token");
+				localStorage.removeItem("user");
+				setStore({ user: null });
+			},
+
+			// Admin Dashboard  
+// 			/admin-dashboard
+
+// /admin-dashboard/clients
+// /admin-dashboard/schedule-management
+// /admin-dashboard/classes
+// /admin-dashboard/enrollments
+// /admin-dashboard/reports
+// /admin-dashboard/blog
+// /admin-dashboard/inventory
+// /admin-dashboard/emails
+// /admin-dashboard/notifications
+// /admin-dashboard/archive
+// /admin-dashboard/schedule
+// /admin-dashboard/tasks
+// /admin-dashboard/activities
+// /admin-dashboard/videos
+// /admin-dashboard/inactive-accounts
+// /admin-dashboard/approvals
+// /admin-dashboard/maintenance
+// /admin-dashboard/staff-signup
+// /admin-dashboard/settings
+clients: async () => {
+	try {
+		const response = await fetch(process.env.BACKEND_URL + "/api/clients");
+		if (response.ok) {
+			const data = await response.json();
+			setStore({ clients: data });
+		} else {
+			console.error("Error fetching clients:", response.status);
+		}
+	} catch (error) {
+		console.error("Error fetching clients:", error);
+	}
+	 
+},
+scheduleManagement: async () => {
+	try {
+		const response = await fetch(process.env.BACKEND_URL + "/api/schedule-management");
+		if (response.ok) {
+			const data = await response.json();
+			setStore({ scheduleManagement: data });
+		} else {
+			console.error("Error fetching schedule-management:", response.status);
+
+		}
+	} catch (error) {
+		console.error("Error fetching schedule-management:", error);
+	}
+}
+
+
+
+
+
+
+			
 			
 		}
 	};
