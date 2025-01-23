@@ -1,10 +1,13 @@
 import cloudinary
-from flask import Flask, request, jsonify, Blueprint
-from api.models import db, Newsletter,User, Parent, Teacher, Child, Class, Enrollment, Program, Contact, Subscription, ProgressReport, Event, Message, Task, Attendance, Grade, Payment, Schedule, Course, Notification,Getintouch, Client
+import os
+from flask import Flask, request, jsonify, Blueprint, current_app
+from api.models import db, Newsletter,User, Parent, Teacher, Child, Class, Enrollment, Program, Contact, Subscription, ProgressReport, Event, Message, Task, Attendance, Grade, Payment, Schedule, Course, Notification,Getintouch, Client, Inventory, BlogPost, Approval, Email
 from api.utils import APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 from flask_bcrypt import Bcrypt
+from datetime import datetime,timedelta
+from werkzeug.utils import secure_filename
 
 api = Blueprint('api', __name__)
 CORS(api, resources={r"/api/*": {"origins": "*"}})
@@ -162,33 +165,79 @@ def create_teacher():
 @api.route('/classes', methods=['GET'])
 def get_classes():
     classes = Class.query.all()
-    classes = list(map(lambda x: x.serialize(), classes))
-    return jsonify(classes), 200
+    return jsonify([class_item.serialize() for class_item in classes]), 200
 
 
 @api.route('/classes/<int:id>', methods=['GET'])
 def get_class(id):
-    class_instance = Class.query.get(id)
-    if not class_instance:
+    class_item = Class.query.get(id)
+    if class_item is None:
         return jsonify({"error": "Class not found"}), 404
-    return jsonify(class_instance.serialize()), 200
-
+    return jsonify(class_item.serialize()), 200
 
 @api.route('/classes', methods=['POST'])
 def create_class():
-    data = request.json
+    title = request.form.get('title')
+    price = request.form.get('price')
+    description = request.form.get('description')
+    age = request.form.get('age')
+    time = request.form.get('time')
+    capacity = request.form.get('capacity')
+    
+    image = request.files.get('image')
+    if image:
+        filename = secure_filename(image.filename)
+        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        image.save(image_path)
+    else:
+        image_path = None
+
     new_class = Class(
-        teacher_id=data['teacher_id'],
-        name=data['name'],
-        description=data.get('description', ''),
-        capacity=data['capacity'],
-        price=data['price'],
-        age=data['age'],
-        time=data['time']
+        title=title,
+        price=price,
+        description=description,
+        age=age,
+        time=time,
+        capacity=capacity,
+        image=image_path
     )
     db.session.add(new_class)
     db.session.commit()
     return jsonify(new_class.serialize()), 201
+
+@api.route('/classes/<int:id>', methods=['PUT'])
+def update_class(id):
+    class_item = Class.query.get(id)
+    if class_item is None:
+        return jsonify({"error": "Class not found"}), 404
+
+    class_item.title = request.form.get('title', class_item.title)
+    class_item.price = request.form.get('price', class_item.price)
+    class_item.description = request.form.get('description', class_item.description)
+    class_item.age = request.form.get('age', class_item.age)
+    class_item.time = request.form.get('time', class_item.time)
+    class_item.capacity = request.form.get('capacity', class_item.capacity)
+
+    image = request.files.get('image')
+    if image:
+        filename = secure_filename(image.filename)
+        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        image.save(image_path)
+        class_item.image = image_path
+
+    db.session.commit()
+    return jsonify(class_item.serialize()), 200
+
+
+@api.route('/classes/<int:id>', methods=['DELETE'])
+def delete_class(id):
+    class_item = Class.query.get(id)
+    if class_item is None:
+        return jsonify({"error": "Class not found"}), 404
+    
+    db.session.delete(class_item)
+    db.session.commit()
+    return jsonify({"message": "Class deleted successfully"}), 200
 
 @api.route('/events', methods=['GET'])
 def get_events():
@@ -277,28 +326,62 @@ def create_child():
 @api.route('/enrollments', methods=['GET'])
 def get_enrollments():
     enrollments = Enrollment.query.all()
-    enrollments = list(map(lambda x: x.serialize(), enrollments))
-    return jsonify(enrollments), 200
-
-
-@api.route('/enrollments/<int:id>', methods=['GET'])
-def get_enrollment(id):
-    enrollment = Enrollment.query.get(id)
-    if not enrollment:
-        return jsonify({"error": "Enrollment not found"}), 404
-    return jsonify(enrollment.serialize()), 200
-
+    return jsonify([enrollment.serialize() for enrollment in enrollments]), 200
 
 @api.route('/enrollments', methods=['POST'])
 def create_enrollment():
     data = request.json
     new_enrollment = Enrollment(
-        child_id=data['child_id'],
-        class_id=data['class_id']
+        student_name=data['studentName'],
+        class_name=data['className'],
+        enrollment_date=datetime.strptime(data['enrollmentDate'], '%Y-%m-%d').date()
     )
     db.session.add(new_enrollment)
     db.session.commit()
     return jsonify(new_enrollment.serialize()), 201
+    
+
+@api.route('/enrollments/<int:id>', methods=['GET'])
+def get_enrollment(id):
+    enrollment = Enrollment.query.get(id)
+    if enrollment is None:
+        return jsonify({"error": "Enrollment not found"}), 404
+    return jsonify(enrollment.serialize()), 200
+
+@api.route('/enrollments/<int:id>', methods=['PUT'])
+def update_enrollment(id):
+    enrollment = Enrollment.query.get(id)
+    if enrollment is None:
+        return jsonify({"error": "Enrollment not found"}), 404
+    
+    data = request.json
+    enrollment.student_name = data.get('studentName', enrollment.student_name)
+    enrollment.class_name = data.get('className', enrollment.class_name)
+    enrollment.enrollment_date = datetime.strptime(data.get('enrollmentDate', enrollment.enrollment_date.isoformat()), '%Y-%m-%d').date()
+    
+    db.session.commit()
+    return jsonify(enrollment.serialize()), 200
+    enrollment = Enrollment.query.get(id)
+    if enrollment is None:
+        return jsonify({"error": "Enrollment not found"}), 404
+    
+    data = request.json
+    enrollment.student_name = data.get('studentName', enrollment.student_name)
+    enrollment.class_name = data.get('className', enrollment.class_name)
+    enrollment.enrollment_date = datetime.fromisoformat(data.get('enrollmentDate', enrollment.enrollment_date.isoformat())).date()
+    
+    db.session.commit()
+    return jsonify(enrollment.serialize()), 200
+
+@api.route('/enrollments/<int:id>', methods=['DELETE'])
+def delete_enrollment(id):
+    enrollment = Enrollment.query.get(id)
+    if enrollment is None:
+        return jsonify({"error": "Enrollment not found"}), 404
+    
+    db.session.delete(enrollment)
+    db.session.commit()
+    return jsonify({"message": "Enrollment deleted successfully"}), 200
 
 
 @api.route('/programs', methods=['GET'])
@@ -536,4 +619,141 @@ def delete_schedule(id):
     db.session.delete(schedule)
     db.session.commit()
     return jsonify({"message": "Schedule deleted successfully"}), 200
+
+@api.route('/inventory', methods=['GET'])
+def get_inventory():
+    inventory = Inventory.query.all()
+    return jsonify([item.serialize() for item in inventory]), 200
+
+@api.route('/inventory', methods=['POST'])
+def create_inventory_item():
+    data = request.json
+    new_item = Inventory(
+        name=data['name'],
+        quantity=data['quantity'],
+        category=data['category'],
+        last_updated=datetime.strptime(data['lastUpdated'], '%Y-%m-%d').date()
+    )
+    db.session.add(new_item)
+    db.session.commit()
+    return jsonify(new_item.serialize()), 201
+
+@api.route('/inventory/<int:id>', methods=['GET'])
+def get_inventory_item(id):
+    item = Inventory.query.get(id)
+    if item is None:
+        return jsonify({"error": "Inventory item not found"}), 404
+    return jsonify(item.serialize()), 200
+
+@api.route('/inventory/<int:id>', methods=['PUT'])
+def update_inventory_item(id):
+    item = Inventory.query.get(id)
+    if item is None:
+        return jsonify({"error": "Inventory item not found"}), 404
+    
+    data = request.json
+    item.name = data.get('name', item.name)
+    item.quantity = data.get('quantity', item.quantity)
+    item.category = data.get('category', item.category)
+    item.last_updated = datetime.strptime(data.get('lastUpdated', item.last_updated.isoformat()), '%Y-%m-%d').date()
+    
+    db.session.commit()
+    return jsonify(item.serialize()), 200
+@api.route('/inventory/<int:id>', methods=['DELETE'])
+def delete_inventory_item(id):
+    item = Inventory.query.get(id)
+    if item is None:
+        return jsonify({"error": "Inventory item not found"}), 404
+    
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({"message": "Inventory item deleted successfully"}), 200
+
+
+@api.route('/blog-posts', methods=['GET'])
+def get_blog_posts():
+    posts = BlogPost.query.all()
+    return jsonify([post.serialize() for post in posts]), 200
+
+@api.route('/blog-posts', methods=['POST'])
+def create_blog_post():
+    data = request.json
+    new_post = BlogPost(
+        title=data['title'],
+        content=data['content'],
+        author=data['author'],
+        date=datetime.now()
+    )
+    db.session.add(new_post)
+    db.session.commit()
+    return jsonify(new_post.serialize()), 201
+
+@api.route('/blog-posts/<int:id>', methods=['DELETE'])
+def delete_blog_post(id):
+    post = BlogPost.query.get(id)
+    if post is None:
+        return jsonify({"error": "Blog post not found"}), 404
+    db.session.delete(post)
+    db.session.commit()
+    return jsonify({"message": "Blog post deleted successfully"}), 200
+
+@api.route('/approvals', methods=['GET'])
+def get_approvals():
+    approvals = Approval.query.all()
+    return jsonify([approval.serialize() for approval in approvals]), 200
+
+@api.route('/approvals/<int:id>', methods=['PUT'])
+def update_approval(id):
+    approval = Approval.query.get(id)
+    if approval is None:
+        return jsonify({"error": "Approval not found"}), 404
+    data = request.json
+    approval.status = data['status']
+    db.session.commit()
+    return jsonify(approval.serialize()), 200
+
+@api.route('/approvals', methods=['POST'])
+def create_approval():
+    data = request.json
+    new_approval = Approval(
+        type=data['type'],
+        name=data['name'],
+        details=data['details'],
+        status=data['status'],
+        date=datetime.fromisoformat(data['date'].replace('Z', '+00:00'))
+    )
+    db.session.add(new_approval)
+    db.session.commit()
+    return jsonify(new_approval.serialize()), 201
+
+
+@api.route('/emails', methods=['GET'])
+def get_emails():
+    emails = Email.query.all()
+    return jsonify([email.serialize() for email in emails]), 200
+
+@api.route('/emails', methods=['POST'])
+def create_email():
+    data = request.json
+    if data.get('scheduledDate'):
+        data['scheduledDate'] = datetime.fromisoformat(data['scheduledDate'])
+    new_email = Email(
+        to=data['to'],
+        subject=data['subject'],
+        content=data['content'],
+        date=datetime.now(),
+        scheduled_date=data.get('scheduledDate')
+    )
+    db.session.add(new_email)
+    db.session.commit()
+    return jsonify(new_email.serialize()), 201
+
+@api.route('/emails/<int:id>', methods=['DELETE'])
+def delete_email(id):
+    email = Email.query.get(id)
+    if email is None:
+        return jsonify({"error": "Email not found"}), 404
+    db.session.delete(email)
+    db.session.commit()
+    return jsonify({"message": "Email deleted successfully"}), 200
 

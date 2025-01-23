@@ -12,7 +12,7 @@ const MaintenanceView = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState("");
-
+   
   const handleInputChange = (e) => {
     setNewTask({ ...newTask, [e.target.name]: e.target.value });
   };

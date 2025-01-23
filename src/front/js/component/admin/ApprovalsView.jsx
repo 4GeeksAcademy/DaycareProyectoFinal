@@ -1,24 +1,31 @@
-import React, { useState } from 'react';
-import { CheckCircle, XCircle } from 'lucide-react';
+import React, { useState, useEffect, useContext } from "react"
+import { Context } from "../../store/appContext"
+import { CheckCircle, XCircle } from "lucide-react"
+
 
 const ApprovalsView = () => {
-  const [approvals, setApprovals] = useState([
-    { id: 1, type: 'Inscripción', name: 'Ana Martínez', details: 'Solicitud de inscripción para el programa de verano', status: 'pending',date: '2025-10-01' },
-    { id: 2, type: 'Cambio de Horario', name: 'Luis Sánchez', details: 'Solicitud de cambio de horario de tarde a mañana', status: 'pending', date: '2025-10-01' },
-    { id: 3, type: 'Actividad Especial', name: 'Sofía Rodríguez', details: 'Propuesta de actividad de pintura al aire libre', status: 'pending', date: '2025-10-01' },
-  ]);
+  const { store, actions } = useContext(Context)
+  
+ 
+  let approvals = store.approvals;
 
-  const handleApprove = (id) => {
-    setApprovals(approvals.map(approval => 
-      approval.id === id ? { ...approval, status: 'approved' } : approval
-    ));
-  };
+ 
+  useEffect(() => {
+    actions.fetchApprovals()
+  }, []);
 
-  const handleReject = (id) => {
-    setApprovals(approvals.map(approval => 
-      approval.id === id ? { ...approval, status: 'rejected' } : approval
-    ));
-  };
+
+  const handleApprove = async (id) => {
+
+    await actions.updateApproval(id, "approved")
+  }
+
+  const handleReject = async (id) => {
+    await actions.updateApproval(id, "rejected")
+  }
+
+
+
 
   return (
     <div>
@@ -34,7 +41,7 @@ const ApprovalsView = () => {
                 <div className="tw-text-gray-500 tw-text-sm">Fecha de solicitud: {approval.date}</div>
               </div>
               <div className="tw-flex tw-space-x-2">
-                {approval.status === 'pending' && (
+                {approval.status === "pending" && (
                   <>
                     <button
                       onClick={() => handleApprove(approval.id)}
@@ -52,12 +59,12 @@ const ApprovalsView = () => {
                     </button>
                   </>
                 )}
-                {approval.status === 'approved' && (
+                {approval.status === "approved" && (
                   <span className="tw-bg-green-100 tw-text-green-800 tw-px-2 tw-py-1 tw-rounded-full tw-text-sm tw-font-semibold">
                     Aprobado
                   </span>
                 )}
-                {approval.status === 'rejected' && (
+                {approval.status === "rejected" && (
                   <span className="tw-bg-red-100 tw-text-red-800 tw-px-2 tw-py-1 tw-rounded-full tw-text-sm tw-font-semibold">
                     Rechazado
                   </span>
@@ -68,8 +75,8 @@ const ApprovalsView = () => {
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ApprovalsView;
+export default ApprovalsView
 

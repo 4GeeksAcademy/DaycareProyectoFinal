@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -74,45 +75,49 @@ class Child(db.Model):
 
 class Class(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
-    name = db.Column(db.String(120), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    capacity = db.Column(db.Integer, nullable=False)
-    price = db.Column(db.Integer, nullable=False)
-    age = db.Column(db.String(20), nullable=False)
+    title = db.Column(db.String(120), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    age = db.Column(db.String(50), nullable=False)
     time = db.Column(db.String(50), nullable=False)
-
+    capacity = db.Column(db.String(50), nullable=False)
+    image = db.Column(db.String(200))
 
     def __repr__(self):
         return f'<Class {self.name}>'
-
     def serialize(self):
         return {
             "id": self.id,
-            "teacher_id": self.teacher_id,
-            "name": self.name,
-            "description": self.description,
-            "capacity": self.capacity,
+            "title": self.title,
             "price": self.price,
+            "description": self.description,
             "age": self.age,
             "time": self.time,
+            "capacity": self.capacity,
+            "image": self.image
         }
+    
+
 
 class Enrollment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    child_id = db.Column(db.Integer, db.ForeignKey('child.id'), nullable=False)
-    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
+    student_name = db.Column(db.String(120), nullable=False)
+    class_name = db.Column(db.String(120), nullable=False)
     enrollment_date = db.Column(db.Date, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
-        return f'<Enrollment {self.id}>'
+        return f'<Enrollment {self.student_name} - {self.class_name}>'
 
     def serialize(self):
         return {
             "id": self.id,
-            "child_id": self.child_id,
-            "class_id": self.class_id,
-            "enrollment_date": self.enrollment_date,
+            "student_name": self.student_name,
+            "class_name": self.class_name,
+            "enrollment_date": self.enrollment_date.isoformat(),
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
         }
 
 class Program(db.Model):
@@ -437,3 +442,88 @@ class Client(db.Model):
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat()
         }
+    
+class Inventory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    category = db.Column(db.String(120), nullable=False)
+    last_updated = db.Column(db.Date, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Inventory {self.name}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "quantity": self.quantity,
+            "category": self.category,
+            "last_updated": self.last_updated.isoformat(),
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
+        }
+
+class BlogPost(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    author = db.Column(db.String(120), nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+
+    def __repr__(self):
+        return f'<BlogPost {self.title}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "author": self.author,
+            "date": self.date.isoformat()
+        }
+
+class Approval(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    details = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+
+    def __repr__(self):
+        return f'<Approval {self.id}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "type": self.type,
+            "name": self.name,
+            "details": self.details,
+            "status": self.status,
+            "date": self.date.isoformat()
+        }
+    
+class Email(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    to = db.Column(db.String(120), nullable=False)
+    subject = db.Column(db.String(120), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+    scheduled_date = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        return f'<Email {self.subject}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "to": self.to,
+            "subject": self.subject,
+            "content": self.content,
+            "date": self.date.isoformat(),
+            "scheduledDate": self.scheduled_date.isoformat() if self.scheduled_date else None
+        }
+    
