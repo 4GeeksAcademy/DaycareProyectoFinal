@@ -23,6 +23,7 @@ import Gallery from "./pages/Gallery.jsx"
 import Services from "./pages/Services.jsx"
 import AboutUs from "./pages/About_us.jsx"
 
+
 // Componentes del Admin Dashboard
 import Sidebar from "./component/admin/Sidebar"
 import Header from "./component/admin/Header"
@@ -76,6 +77,8 @@ import ParentHeader from "./component/parent/ParentHeader.jsx"
 import ParentVirtualClasses from "./component/parent/ParentVirtualClasses.jsx"
 
 
+//Componentes Store
+import Slideshow from "./component/store/Slideshow.jsx"
 
 
 const AdminDashboard = () => (
@@ -157,15 +160,22 @@ const ParentDashboardRoutes = () => (
 </div>
 )
 
+const Store = () => (
+<div className="tw-flex tw-h-screen tw-overflow-hidden">
+<Slideshow />
+</div>
+)
+  
 const MainRoutes = () => {
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith("/admin-dashboard")
   const isTeacherRoute = location.pathname.startsWith("/teacher-dashboard")
   const isParentRoute = location.pathname.startsWith("/parent-dashboard")
+  const isStoreRoute = location.pathname.startsWith("/store")
 
   return (
     <>
-       {!isAdminRoute && !isTeacherRoute && !isParentRoute && <Navbar />}
+       {!isAdminRoute && !isTeacherRoute && !isParentRoute && !isStoreRoute && <Navbar />}
       <Routes>
         {/* Rutas principales */}
         <Route path="/" element={<Home />} />
@@ -183,13 +193,17 @@ const MainRoutes = () => {
         <Route path="/admin-dashboard/*" element={<AdminDashboard />} />
         <Route path="/teacher-dashboard/*" element={<TeacherDashboardRoutes />} />
         <Route path="/parent-dashboard/*" element={<ParentDashboardRoutes />} />
+        <Route path="/store" element={<Store />} />
         <Route path="/programs" element={<Programs />} />
         <Route path="*" element={<h1>Not found!</h1>} />
         <Route path="/allprograms" element={<Allprograms />} />
         <Route path="/gallery" element={<Gallery />} />
+        
         <Route path="/about_us" element={<AboutUs />} />
+
+        <Route path="*" element={<h1>Not found!</h1>} />
       </Routes>
-      {!isAdminRoute && !isTeacherRoute && !isParentRoute && <Footer />}
+      {!isAdminRoute && !isTeacherRoute && !isParentRoute && !isStoreRoute &&  <Footer />}
     </>
   )
 }

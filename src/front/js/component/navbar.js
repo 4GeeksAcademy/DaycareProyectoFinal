@@ -115,7 +115,7 @@ useEffect (() => {
               Slime Shop
               {isDropdownOpen && (
                 <ul className="dropdownMenu">
-                  <li className="dropdownItem">Store</li>
+                  <li className="dropdownItem"><Link to="/store">Store</Link></li>
                   <li className="dropdownItem">ShoppingCart</li>
                   <li className="dropdownItem">All Products</li>
                 </ul>
