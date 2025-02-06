@@ -8,11 +8,11 @@ const TeacherClasses = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    actions.GetSchedules()
+    actions.getTeacherClasses();
   }, []); 
-  // const filteredClasses = teacherClasses.filter((cls) =>
-  //   cls.name.toLowerCase().includes(searchTerm.toLowerCase())
-  // );
+  const filteredClasses = teacherClasses.filter((cls) =>
+    cls.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -41,19 +41,23 @@ const TeacherClasses = () => {
             Nombre de la Clase
           </th>
           <th className="tw-px-6 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase tw-tracking-wider">
-            Dia
+            Edad
           </th>
           <th className="tw-px-6 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase tw-tracking-wider">
             Hora
           </th>
+          <th className="tw-px-6 tw-py-3 tw-text-left tw-text-xs tw-font-medium tw-text-gray-500 tw-uppercase tw-tracking-wider">
+            Capacidad
+          </th>
         </tr>
       </thead>
       <tbody className="tw-bg-white tw-divide-y tw-divide-gray-200">
-        {store.schedules.map((cls) => (
+        {filteredClasses.map((cls) => (
           <tr key={cls.id}>
-            <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap">{cls.class}</td>
-            <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap">{cls.dayOfWeek}</td>
-            <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap">{`${cls.startTime} - ${cls.endTime}`}</td>
+            <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap">{cls.name}</td>
+            <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap">{cls.age}</td>
+            <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap">{cls.time}</td>
+            <td className="tw-px-6 tw-py-4 tw-whitespace-nowrap">{cls.capacity}</td>
           </tr>
         ))}
       </tbody>
