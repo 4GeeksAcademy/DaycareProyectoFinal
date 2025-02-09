@@ -86,7 +86,10 @@ const Badge = ({ className, variant = "default", children, ...props }) => {
   const { store, actions } = useContext(Context)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
+  useEffect(() => {
+    console.log("Fetching enrolled classes...");
+    actions.fetchEnrolledClasses();
+  }, []);
   useEffect(() => {
     const fetchClasses = async () => {
       try {
