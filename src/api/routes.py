@@ -3332,29 +3332,26 @@ def get_parent_payment(id):
 
 
 
-
-# Crear un nuevo pago desde PayPal
 @api.route('/parent_payments', methods=['POST'])
 def create_parent_payment():
     data = request.get_json()
-
     if not data:
         return jsonify({"error": "No se recibieron datos"}), 400
+    print("Datos recibidos en el backend:", data)
 
     try:
-        parent_id = data.get('parent_id')
+        user_id = data.get('user_id')
+        if not user_id:
+            return jsonify({"error": "El user_id es obligatorio"}), 400
+        user = User.query.get(user_id) 
+        if not user:
+            return jsonify({"error": "El user_id no existe"}), 400
 
-        # Verificar que el parent_id no sea None
-        if not parent_id:
-            return jsonify({"error": "El parent_id es obligatorio"}), 400
-
-        # Verificar si el parent_id existe en la base de datos
-        parent = Parent.query.get(parent_id)
+        parent = Parent.query.filter_by(user_id=user.id).first() 
         if not parent:
-            return jsonify({"error": "El parent_id no existe"}), 400
-
+            return jsonify({"error": "El parent_id no existe para este user_id"}), 400
         new_payment = ParentPayment(
-            parent_id=parent_id,
+            parent_id=parent.id,
             amount=float(data['amount']),
             concept=data['concept'],
             status=data['status'],
@@ -3362,15 +3359,13 @@ def create_parent_payment():
             paypal_order_id=data['paypal_order_id'],
             payer_email=data['payer_email']
         )
-
         db.session.add(new_payment)
         db.session.commit()
-
         return jsonify({"message": "Pago registrado exitosamente", "payment": new_payment.serialize()}), 201
-
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Error al procesar el pago: {str(e)}"}), 500
+
 
 
 

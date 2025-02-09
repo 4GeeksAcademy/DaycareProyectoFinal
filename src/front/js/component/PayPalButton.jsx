@@ -3,7 +3,6 @@ import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 const PayPalButton = ({ amount, onSuccess }) => {
   const clientId = process.env.REACT_APP_CLIENT_ID;
-
   return (
     <PayPalScriptProvider options={{ "client-id": clientId }}>
       <PayPalButtons
@@ -15,7 +14,7 @@ const PayPalButton = ({ amount, onSuccess }) => {
         onApprove={async (data, actions) => {
           const order = await actions.order.capture();
           console.log("Datos recibidos de PayPal:", order);
-          onSuccess(order); // Callback para manejar el éxito
+          onSuccess(order); 
         }}
       />
     </PayPalScriptProvider>

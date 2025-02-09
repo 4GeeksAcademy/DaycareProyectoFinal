@@ -166,7 +166,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 	
 						setStore({ 
 							token: data.token, 
-							user: data.user 
+							user: data.user, 
+							parent_id: data.user.parent_id
 						});
 			
 						console.log("TOKEN GUARDADO EN STORE:", getStore().token);  
@@ -1566,26 +1567,25 @@ const getState = ({ getStore, getActions, setStore }) => {
 			  
 			  //PAYPAL
 			  processPayment: async (order) => {
+				const store = getStore();
+				const user = store.user;
+			
+				if (!user) {
+				  console.error("No hay usuario logueado");
+				  return;
+				}
+			
+				const paymentData = {
+				  user_id: user.id,  // Enviar user_id, no parent_id
+				  amount: order.purchase_units[0].amount.value,
+				  concept: "Pago Mensualidad",
+				  status: "Completado",
+				  due_date: new Date().toISOString().split("T")[0],
+				  paypal_order_id: order.id,
+				  payer_email: order.payer.email_address,
+				};
+			
 				try {
-				  const store = getStore();
-				  const user = store.user || JSON.parse(localStorage.getItem("user"));
-				  if (!user) {
-					console.error("No hay usuario logueado");
-					return;
-				  }
-			
-				  const paymentData = {
-					parent_id: user.id,
-					amount: order.purchase_units[0].amount.value,
-					concept: "Pago Mensualidad",
-					status: "Completado",
-					due_date: new Date().toISOString().split("T")[0],
-					paypal_order_id: order.id,
-					payer_email: order.payer.email_address,
-				  };
-			
-				  console.log("Enviando pago al backend:", paymentData);
-			
 				  const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/parent_payments`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
@@ -1598,13 +1598,13 @@ const getState = ({ getStore, getActions, setStore }) => {
 				  console.log("Pago guardado en backend:", data);
 			
 				  // Opcional: actualizar pagos en store
-				  setStore({ parentPayments: [...store.parentPayments, data] });
-			
-				  return data;
+				  setStore({ parentPayments: [...store.parentPayments, data.payment] });
 				} catch (error) {
 				  console.error("Error al procesar pago:", error);
 				}
 			  },
+			
+			
 			  fetchEnrolledClasses: async () => {
 				try {
 				  const token = localStorage.getItem("token")

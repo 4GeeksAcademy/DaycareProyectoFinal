@@ -14,7 +14,6 @@ const ParentPayments = () => {
 
     console.log("Clases enroladas en el store:", store.enrolledClasses);
   }, []);
-
   const handlePaymentSelection = (payment) => {
     const isSelected = selectedPayments.some((p) => p.id === payment.id);
     let newSelectedPayments;
@@ -33,7 +32,7 @@ const ParentPayments = () => {
 
   const handlePaymentSuccess = async (order) => {
     const paymentData = {
-      parent_id: store.user.id, 
+      user_id: store.user.id,
       amount: order.purchase_units[0].amount.value,
       concept: "Monthly Payment",
       status: "Filled",
@@ -41,24 +40,24 @@ const ParentPayments = () => {
       paypal_order_id: order.id,
       payer_email: order.payer.email_address,
     };
-
+    console.log("Datos del usuario:", store.user);  
+    console.log("user_id enviado:", store.user.id); 
     console.log("Datos estructurados para el backend:", paymentData);
-
     try {
       const response = await fetch(process.env.BACKEND_URL + "api/parent_payments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(paymentData),
       });
-
+  
       if (!response.ok) throw new Error(`Error en la solicitud: ${response.statusText}`);
-
+  
       const data = await response.json();
       console.log("Pago guardado en el backend:", data);
-
+  
       actions.fetchEnrolledClasses();
-      setSelectedPayments([]);
-      setTotalAmount(0);
+      setSelectedPayments([]); 
+      setTotalAmount(0); 
     } catch (error) {
       console.error("Error al guardar pago:", error);
     }
